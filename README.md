@@ -148,6 +148,13 @@ manual fica em **Configurações → Biblioteca → Reindexar biblioteca**.
 Configuração do módulo: `minSdk 29`, `targetSdk 37`, `compileSdk 37`, `sourceCompatibility` e
 `jvmTarget` em 21.
 
+## Testes e CI
+
+- Testes unitários das ViewModels de biblioteca, player e configurações, dos mappers do Room e
+  do cálculo de volume do crossfade (`./gradlew :app:testDebugUnitTest`)
+- GitHub Actions em todo `push` (`.github/workflows/android-ci.yml`), com JDK 21 e Android SDK,
+  rodando os testes unitários. O build do APK permanece comentado no workflow
+
 ## Examples of commits
 
 ```
