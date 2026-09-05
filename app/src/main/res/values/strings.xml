@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Resonance</string>
+    <string name="widget_description">Controle a reprodução do Resonance direto da tela inicial.</string>
 </resources>
