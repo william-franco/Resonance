@@ -3,6 +3,7 @@ package br.com.williamfranco.resonance.src.routes
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -42,6 +43,9 @@ fun RoutesApp() {
         NavHost(
             navController = navController,
             startDestination = Routes.LIBRARY,
+            modifier = Modifier
+                .fillMaxSize()
+                .navigationBarsPadding(),
         ) {
             composable(Routes.LIBRARY) {
                 LibraryRoute(

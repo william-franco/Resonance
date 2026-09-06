@@ -8,6 +8,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import br.com.williamfranco.resonance.src.common.patterns.StatePattern
 import br.com.williamfranco.resonance.src.features.library.view_models.LibraryViewModel
 import br.com.williamfranco.resonance.src.features.library.view_models.LibraryViewModelImpl
 import br.com.williamfranco.resonance.src.features.library.views.LibraryView
@@ -27,8 +28,9 @@ fun LibraryRoute(
     val libraryViewModel: LibraryViewModel = koinViewModel<LibraryViewModelImpl>(viewModelStoreOwner = activity)
     val playerViewModel: PlayerViewModel = koinViewModel<PlayerViewModelImpl>(viewModelStoreOwner = activity)
 
-    val uiState by libraryViewModel.uiState.collectAsStateWithLifecycle()
+    val libraryState by libraryViewModel.state.collectAsStateWithLifecycle()
     val playbackState by playerViewModel.state.collectAsStateWithLifecycle()
+    val songs = (libraryState as? StatePattern.Success)?.data?.songs.orEmpty()
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
@@ -36,14 +38,14 @@ fun LibraryRoute(
     )
 
     LibraryView(
-        uiState = uiState,
+        libraryState = libraryState,
         currentSongId = playbackState.currentSong?.id,
         bottomPadding = bottomPadding,
         onTabSelected = libraryViewModel::selectTab,
         onQueryChange = libraryViewModel::updateQuery,
-        onSongClick = { index -> playerViewModel.play(uiState.songs, index) },
-        onPlayAll = { playerViewModel.play(uiState.songs, 0) },
-        onShuffleAll = { playerViewModel.shuffle(uiState.songs) },
+        onSongClick = { index -> playerViewModel.play(songs, index) },
+        onPlayAll = { playerViewModel.play(songs, 0) },
+        onShuffleAll = { playerViewModel.shuffle(songs) },
         onToggleFavorite = libraryViewModel::toggleFavorite,
         onAlbumClick = { onOpenCollection(CollectionType.ALBUM, it.id.toString()) },
         onArtistClick = { onOpenCollection(CollectionType.ARTISTA, it.name) },
@@ -54,5 +56,6 @@ fun LibraryRoute(
         onAddToPlaylist = { song, playlist -> libraryViewModel.addToPlaylist(playlist.id, listOf(song.id)) },
         onOpenSettings = onOpenSettings,
         onRequestPermission = { permissionLauncher.launch(audioPermission()) },
+        onRetry = libraryViewModel::refresh,
     )
 }

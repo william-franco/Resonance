@@ -2,6 +2,8 @@ package br.com.williamfranco.resonance.src.features.library.view_models
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import br.com.williamfranco.resonance.src.common.patterns.StatePattern
+import br.com.williamfranco.resonance.src.features.library.exceptions.LibraryException
 import br.com.williamfranco.resonance.src.features.library.models.Song
 import br.com.williamfranco.resonance.src.features.library.repositories.LibraryRepository
 import br.com.williamfranco.resonance.src.routes.CollectionType
@@ -12,11 +14,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-data class CollectionUiState(
-    val isLoading: Boolean = true,
+data class CollectionContent(
     val type: CollectionType = CollectionType.ALBUM,
     val title: String = "",
     val subtitle: String = "",
@@ -25,8 +25,10 @@ data class CollectionUiState(
     val playlistId: Long? = null,
 )
 
+typealias CollectionState = StatePattern<CollectionContent, LibraryException>
+
 interface CollectionViewModel {
-    val uiState: StateFlow<CollectionUiState>
+    val state: StateFlow<CollectionState>
 
     fun load(type: CollectionType, key: String)
     fun toggleFavorite(songId: Long)
@@ -37,34 +39,42 @@ class CollectionViewModelImpl(
     private val libraryRepository: LibraryRepository,
 ) : ViewModel(), CollectionViewModel {
 
-    private val _uiState = MutableStateFlow(CollectionUiState())
-    override val uiState: StateFlow<CollectionUiState> = _uiState.asStateFlow()
+    private val _state = MutableStateFlow<CollectionState>(StatePattern.Initial)
+    override val state: StateFlow<CollectionState> = _state.asStateFlow()
 
     private var songsJob: Job? = null
+    private var loadedType: CollectionType? = null
+    private var loadedKey: String? = null
 
     override fun load(type: CollectionType, key: String) {
-        if (_uiState.value.type == type && _uiState.value.keyMatches(key) && !_uiState.value.isLoading) return
+        if (loadedType == type && loadedKey == key && _state.value is StatePattern.Success) return
 
         songsJob?.cancel()
+        loadedType = type
+        loadedKey = key
+
         val playlistId = key.toLongOrNull().takeIf { type == CollectionType.PLAYLIST }
 
-        _uiState.value = CollectionUiState(
-            isLoading = true,
-            type = type,
-            title = defaultTitleFor(type, key),
-            playlistId = playlistId,
-        )
+        _state.value = StatePattern.Loading
 
         if (type == CollectionType.PLAYLIST && playlistId != null) {
             viewModelScope.launch {
                 val name = libraryRepository.playlistName(playlistId)
-                if (name != null) _uiState.update { it.copy(title = name) }
+                if (name == null) {
+                    _state.value = StatePattern.Error(LibraryException("Playlist não encontrada."))
+                    return@launch
+                }
+                startObserving(type, key, name, playlistId)
             }
+            return
         }
 
-        songsJob = songsFlowFor(type, key)
-            .onEach { songs -> _uiState.update { it.withSongs(songs) } }
-            .launchIn(viewModelScope)
+        startObserving(
+            type = type,
+            key = key,
+            title = defaultTitleFor(type, key),
+            playlistId = playlistId,
+        )
     }
 
     override fun toggleFavorite(songId: Long) {
@@ -72,8 +82,30 @@ class CollectionViewModelImpl(
     }
 
     override fun removeFromPlaylist(songId: Long) {
-        val playlistId = _uiState.value.playlistId ?: return
+        val playlistId = (_state.value as? StatePattern.Success)?.data?.playlistId ?: return
         viewModelScope.launch { libraryRepository.removeFromPlaylist(playlistId, songId) }
+    }
+
+    private fun startObserving(
+        type: CollectionType,
+        key: String,
+        title: String,
+        playlistId: Long?,
+    ) {
+        songsJob = songsFlowFor(type, key)
+            .onEach { songs ->
+                _state.value = StatePattern.Success(
+                    withSongs(
+                        content = CollectionContent(
+                            type = type,
+                            title = title,
+                            playlistId = playlistId,
+                        ),
+                        songs = songs,
+                    ),
+                )
+            }
+            .launchIn(viewModelScope)
     }
 
     private fun songsFlowFor(type: CollectionType, key: String): Flow<List<Song>> = when (type) {
@@ -89,21 +121,14 @@ class CollectionViewModelImpl(
         else -> ""
     }
 
-    private fun CollectionUiState.keyMatches(key: String): Boolean = when (type) {
-        CollectionType.PLAYLIST -> playlistId == key.toLongOrNull()
-        CollectionType.ARTISTA -> title == key
-        else -> false
-    }
-
-    private fun CollectionUiState.withSongs(songs: List<Song>): CollectionUiState {
+    private fun withSongs(content: CollectionContent, songs: List<Song>): CollectionContent {
         val reference = songs.firstOrNull()
-        val resolvedTitle = when (type) {
-            CollectionType.ALBUM -> reference?.album ?: title
-            else -> title
+        val resolvedTitle = when (content.type) {
+            CollectionType.ALBUM -> reference?.album ?: content.title
+            else -> content.title
         }
         val totalMinutes = songs.sumOf { it.durationMs } / 60_000
-        return copy(
-            isLoading = false,
+        return content.copy(
             title = resolvedTitle.ifBlank { "Coleção" },
             subtitle = "${songs.size} faixas · $totalMinutes min",
             artworkUri = songs.firstNotNullOfOrNull { it.artworkUri },

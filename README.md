@@ -49,6 +49,8 @@ app/src/main/java/br/com/williamfranco/resonance/
 ├── MainActivity.kt                  # edge-to-edge, ResonanceTheme, RoutesApp
 ├── ResonanceApplication.kt          # startKoin
 └── src/
+    ├── common/
+    │   └── patterns/                # StatePattern, ResultPattern
     ├── design/
     │   ├── components/              # AlbumArt, SongRow, PlayShuffleRow, Dimens
     │   └── theme/                   # Color, Type, Theme, DominantColorScheme
@@ -68,9 +70,17 @@ app/src/main/java/br/com/williamfranco/resonance/
 O fluxo de dados é unidirecional: a UI observa ViewModels, que observam repositórios; os
 repositórios falam com Room, DataStore e a sessão de mídia.
 
+**Padrões de estado**
+
+- `ResultPattern` — retorno tipado de operações que podem falhar (ex.: `LibraryRepository.sync()`)
+- `StatePattern` — estado assíncrono da UI com `Initial`, `Loading`, `Success` e `Error`, usado
+  nas ViewModels de biblioteca e coleção. Após o sync inicial, os Flows do Room continuam
+  atualizando `Success` de forma reativa (favoritos, playlists, busca)
+
 ```
 Compose UI ──▶ ViewModel ──▶ Repository ──▶ Room / DataStore / MediaStore
-     ▲                            │
+     ▲              │              │
+     │         StatePattern    ResultPattern (sync)
      └──── StateFlow ─────────────┘
 
 PlayerViewModel ──▶ PlaybackConnection ◀──▶ PlaybackService ──▶ ExoPlayer

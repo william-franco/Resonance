@@ -1,8 +1,10 @@
 package br.com.williamfranco.resonance.src.features.library.view_models
 
+import br.com.williamfranco.resonance.src.common.patterns.StatePattern
 import br.com.williamfranco.resonance.src.fakes.FakeLibraryRepository
 import br.com.williamfranco.resonance.src.fakes.FakeSettingsRepository
 import br.com.williamfranco.resonance.src.fakes.song
+import br.com.williamfranco.resonance.src.features.library.exceptions.LibraryException
 import br.com.williamfranco.resonance.src.features.library.models.LibraryTab
 import br.com.williamfranco.resonance.src.features.settings.models.SettingsModel
 import br.com.williamfranco.resonance.src.services.Constants
@@ -46,12 +48,11 @@ class LibraryViewModelImplTest {
         val viewModel = viewModel()
         advanceUntilIdle()
 
-        val state = viewModel.uiState.value
-        assertFalse(state.isLoading)
-        assertEquals(3, state.songs.size)
-        assertEquals(2, state.albums.size)
-        assertEquals(2, state.artists.size)
-        assertEquals(1, state.favoritesCount)
+        val state = viewModel.state.value as StatePattern.Success
+        assertEquals(3, state.data.songs.size)
+        assertEquals(2, state.data.albums.size)
+        assertEquals(2, state.data.artists.size)
+        assertEquals(1, state.data.favoritesCount)
     }
 
     @Test
@@ -62,9 +63,9 @@ class LibraryViewModelImplTest {
         viewModel.updateQuery("nébula")
         advanceUntilIdle()
 
-        val state = viewModel.uiState.value
-        assertEquals(listOf("Aurora", "Bruma"), state.songs.map { it.title })
-        assertEquals(listOf("Nébula"), state.artists.map { it.name })
+        val state = viewModel.state.value as StatePattern.Success
+        assertEquals(listOf("Aurora", "Bruma"), state.data.songs.map { it.title })
+        assertEquals(listOf("Nébula"), state.data.artists.map { it.name })
     }
 
     @Test
@@ -75,9 +76,9 @@ class LibraryViewModelImplTest {
         viewModel.updateQuery("inexistente")
         advanceUntilIdle()
 
-        val state = viewModel.uiState.value
-        assertTrue(state.songs.isEmpty())
-        assertFalse(state.isEmptyLibrary)
+        val state = viewModel.state.value as StatePattern.Success
+        assertTrue(state.data.songs.isEmpty())
+        assertFalse(state.data.isEmptyLibrary)
     }
 
     @Test
@@ -88,8 +89,9 @@ class LibraryViewModelImplTest {
         viewModel.selectTab(LibraryTab.ALBUNS)
         advanceUntilIdle()
 
-        assertEquals(LibraryTab.ALBUNS, viewModel.uiState.value.tab)
-        assertEquals(3, viewModel.uiState.value.songs.size)
+        val state = viewModel.state.value as StatePattern.Success
+        assertEquals(LibraryTab.ALBUNS, state.data.tab)
+        assertEquals(3, state.data.songs.size)
     }
 
     @Test
@@ -109,7 +111,7 @@ class LibraryViewModelImplTest {
         advanceUntilIdle()
 
         assertEquals(0, repository.syncCount)
-        assertFalse(viewModel.uiState.value.hasPermission)
+        assertTrue(viewModel.state.value is StatePattern.Initial)
     }
 
     @Test
@@ -122,7 +124,8 @@ class LibraryViewModelImplTest {
         viewModel.onPermissionResult(granted = true)
         advanceUntilIdle()
 
-        assertTrue(viewModel.uiState.value.hasPermission)
+        val state = viewModel.state.value as StatePattern.Success
+        assertTrue(state.data.hasPermission)
         assertEquals(1, repository.syncCount)
     }
 
@@ -146,7 +149,8 @@ class LibraryViewModelImplTest {
         advanceUntilIdle()
 
         assertEquals(listOf(1L), repository.toggledFavorites)
-        assertEquals(2, viewModel.uiState.value.favoritesCount)
+        val state = viewModel.state.value as StatePattern.Success
+        assertEquals(2, state.data.favoritesCount)
     }
 
     @Test
@@ -173,6 +177,19 @@ class LibraryViewModelImplTest {
         advanceUntilIdle()
 
         assertEquals(listOf(1L to listOf(2L)), repository.addedToPlaylist)
+    }
+
+    @Test
+    fun `falha no sync expoe StatePattern Error`() = runTest {
+        val repository = FakeLibraryRepository(
+            initialSongs = songs,
+            syncFailure = LibraryException("Falha simulada."),
+        )
+        val viewModel = LibraryViewModelImpl(repository, FakeSettingsRepository())
+        advanceUntilIdle()
+
+        val state = viewModel.state.value as StatePattern.Error
+        assertEquals("Falha simulada.", state.error.message)
     }
 
     private fun viewModel(): LibraryViewModelImpl = LibraryViewModelImpl(

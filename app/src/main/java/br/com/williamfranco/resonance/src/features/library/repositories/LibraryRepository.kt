@@ -1,6 +1,8 @@
 package br.com.williamfranco.resonance.src.features.library.repositories
 
+import br.com.williamfranco.resonance.src.common.patterns.ResultPattern
 import br.com.williamfranco.resonance.src.data.local.PlaylistDao
+import br.com.williamfranco.resonance.src.features.library.exceptions.LibraryException
 import br.com.williamfranco.resonance.src.data.local.PlaylistEntity
 import br.com.williamfranco.resonance.src.data.local.SongDao
 import br.com.williamfranco.resonance.src.data.local.toAlbums
@@ -29,7 +31,7 @@ interface LibraryRepository {
     fun hasPermission(): Boolean
     fun requiredPermission(): String
 
-    suspend fun sync(minDurationMs: Long): Int
+    suspend fun sync(minDurationMs: Long): ResultPattern<Int, LibraryException>
     suspend fun toggleFavorite(songId: Long)
     suspend fun createPlaylist(name: String): Long
     suspend fun deletePlaylist(playlistId: Long)
@@ -68,10 +70,18 @@ class LibraryRepositoryImpl(
 
     override fun requiredPermission(): String = scanner.requiredPermission()
 
-    override suspend fun sync(minDurationMs: Long): Int {
-        val scanned = scanner.scan(minDurationMs)
-        songDao.sync(scanned)
-        return scanned.size
+    override suspend fun sync(minDurationMs: Long): ResultPattern<Int, LibraryException> {
+        if (!hasPermission()) {
+            return ResultPattern.Error(LibraryException("Permissão de áudio não concedida."))
+        }
+
+        return try {
+            val scanned = scanner.scan(minDurationMs)
+            songDao.sync(scanned)
+            ResultPattern.Success(scanned.size)
+        } catch (error: Exception) {
+            ResultPattern.Error(LibraryException("Erro ao indexar biblioteca: $error"))
+        }
     }
 
     override suspend fun toggleFavorite(songId: Long) = songDao.toggleFavorite(songId)

@@ -1,7 +1,9 @@
 package br.com.williamfranco.resonance.src.fakes
 
+import br.com.williamfranco.resonance.src.common.patterns.ResultPattern
 import br.com.williamfranco.resonance.src.data.local.toAlbums
 import br.com.williamfranco.resonance.src.data.local.toArtists
+import br.com.williamfranco.resonance.src.features.library.exceptions.LibraryException
 import br.com.williamfranco.resonance.src.features.library.models.Album
 import br.com.williamfranco.resonance.src.features.library.models.Artist
 import br.com.williamfranco.resonance.src.features.library.models.Playlist
@@ -16,6 +18,7 @@ class FakeLibraryRepository(
     initialSongs: List<Song> = emptyList(),
     initialPlaylists: List<Playlist> = emptyList(),
     private var permissionGranted: Boolean = true,
+    var syncFailure: LibraryException? = null,
 ) : LibraryRepository {
 
     private val _songs = MutableStateFlow(initialSongs)
@@ -48,10 +51,11 @@ class FakeLibraryRepository(
 
     override fun requiredPermission(): String = "android.permission.READ_MEDIA_AUDIO"
 
-    override suspend fun sync(minDurationMs: Long): Int {
+    override suspend fun sync(minDurationMs: Long): ResultPattern<Int, LibraryException> {
         syncCount += 1
         lastSyncMinDuration = minDurationMs
-        return _songs.value.size
+        syncFailure?.let { failure -> return ResultPattern.Error(failure) }
+        return ResultPattern.Success(_songs.value.size)
     }
 
     override suspend fun toggleFavorite(songId: Long) {

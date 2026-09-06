@@ -6,10 +6,13 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -18,11 +21,13 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Album
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material.icons.rounded.MusicNote
 import androidx.compose.material.icons.automirrored.rounded.PlaylistPlay
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -41,23 +46,26 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import br.com.williamfranco.resonance.src.common.patterns.StatePattern
 import br.com.williamfranco.resonance.src.design.components.Dimens
+import br.com.williamfranco.resonance.src.design.components.EmptyState
 import br.com.williamfranco.resonance.src.features.library.models.Album
 import br.com.williamfranco.resonance.src.features.library.models.Artist
 import br.com.williamfranco.resonance.src.features.library.models.LibraryTab
 import br.com.williamfranco.resonance.src.features.library.models.Playlist
 import br.com.williamfranco.resonance.src.features.library.models.Song
-import br.com.williamfranco.resonance.src.features.library.view_models.LibraryUiState
+import br.com.williamfranco.resonance.src.features.library.view_models.LibraryState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LibraryView(
-    uiState: LibraryUiState,
+    libraryState: LibraryState,
     currentSongId: Long?,
     bottomPadding: Dp,
     onTabSelected: (LibraryTab) -> Unit,
@@ -75,13 +83,20 @@ fun LibraryView(
     onAddToPlaylist: (Song, Playlist) -> Unit,
     onOpenSettings: () -> Unit,
     onRequestPermission: () -> Unit,
+    onRetry: () -> Unit,
 ) {
+    val content = (libraryState as? StatePattern.Success)?.data
+    val query = content?.query.orEmpty()
+    val selectedTab = content?.tab ?: LibraryTab.MUSICAS
+    val isScanning = content?.isScanning == true ||
+        libraryState is StatePattern.Loading
     var searchVisible by remember { mutableStateOf(false) }
     var newPlaylistVisible by remember { mutableStateOf(false) }
     var songForPlaylist by remember { mutableStateOf<Song?>(null) }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
+        contentWindowInsets = WindowInsets.statusBars,
         topBar = {
             Column {
                 CenterAlignedTopAppBar(
@@ -112,9 +127,9 @@ fun LibraryView(
                     },
                 )
 
-                AnimatedVisibility(visible = searchVisible) {
+                AnimatedVisibility(visible = searchVisible && content != null) {
                     OutlinedTextField(
-                        value = uiState.query,
+                        value = query,
                         onValueChange = onQueryChange,
                         placeholder = { Text("Buscar faixas, álbuns ou artistas") },
                         singleLine = true,
@@ -127,7 +142,7 @@ fun LibraryView(
                     )
                 }
 
-                AnimatedVisibility(visible = uiState.isScanning) {
+                AnimatedVisibility(visible = isScanning) {
                     LinearProgressIndicator(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -137,10 +152,10 @@ fun LibraryView(
             }
         },
         bottomBar = {
-            NavigationBar(modifier = Modifier.height(Dimens.BottomBarHeight)) {
+            NavigationBar {
                 LibraryTab.entries.forEach { tab ->
                     NavigationBarItem(
-                        selected = uiState.tab == tab,
+                        selected = selectedTab == tab,
                         onClick = { onTabSelected(tab) },
                         icon = { Icon(tab.icon(), contentDescription = tab.label) },
                         label = { Text(tab.label, style = MaterialTheme.typography.labelMedium) },
@@ -150,58 +165,95 @@ fun LibraryView(
             }
         },
     ) { padding ->
-        if (!uiState.hasPermission) {
-            PermissionView(
-                onRequestPermission = onRequestPermission,
-                modifier = Modifier.padding(padding),
-            )
-            return@Scaffold
-        }
+        when (libraryState) {
+            is StatePattern.Initial -> {
+                PermissionView(
+                    onRequestPermission = onRequestPermission,
+                    modifier = Modifier.padding(padding),
+                )
+            }
 
-        val contentPadding = PaddingValues(
-            top = padding.calculateTopPadding() + 4.dp,
-            bottom = padding.calculateBottomPadding() + bottomPadding + 12.dp,
-        )
+            is StatePattern.Loading -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
 
-        AnimatedContent(
-            targetState = uiState.tab,
-            transitionSpec = { fadeIn(tween(180)) togetherWith fadeOut(tween(120)) },
-            label = "libraryTab",
-            modifier = Modifier.fillMaxSize(),
-        ) { tab ->
-            when (tab) {
-                LibraryTab.MUSICAS -> SongsTab(
-                    songs = uiState.songs,
-                    currentSongId = currentSongId,
-                    contentPadding = contentPadding,
-                    onSongClick = onSongClick,
-                    onPlayAll = onPlayAll,
-                    onShuffleAll = onShuffleAll,
-                    onToggleFavorite = onToggleFavorite,
-                    onAddToPlaylist = { songForPlaylist = it },
+            is StatePattern.Error -> {
+                EmptyState(
+                    icon = Icons.Rounded.ErrorOutline,
+                    title = "Não foi possível carregar a biblioteca",
+                    description = libraryState.error.message.orEmpty(),
+                    modifier = Modifier.padding(padding),
+                    action = {
+                        TextButton(onClick = onRetry) {
+                            Text("Tentar novamente")
+                        }
+                    },
+                )
+            }
+
+            is StatePattern.Success -> {
+                if (!libraryState.data.hasPermission) {
+                    PermissionView(
+                        onRequestPermission = onRequestPermission,
+                        modifier = Modifier.padding(padding),
+                    )
+                    return@Scaffold
+                }
+
+                val uiState = libraryState.data
+                val contentPadding = PaddingValues(
+                    top = padding.calculateTopPadding() + 4.dp,
+                    bottom = padding.calculateBottomPadding() + bottomPadding + 12.dp,
                 )
 
-                LibraryTab.ALBUNS -> AlbumsTab(
-                    albums = uiState.albums,
-                    contentPadding = contentPadding,
-                    onAlbumClick = onAlbumClick,
-                )
+                AnimatedContent(
+                    targetState = uiState.tab,
+                    transitionSpec = { fadeIn(tween(180)) togetherWith fadeOut(tween(120)) },
+                    label = "libraryTab",
+                    modifier = Modifier.fillMaxSize(),
+                ) { tab ->
+                    when (tab) {
+                        LibraryTab.MUSICAS -> SongsTab(
+                            songs = uiState.songs,
+                            currentSongId = currentSongId,
+                            contentPadding = contentPadding,
+                            onSongClick = onSongClick,
+                            onPlayAll = onPlayAll,
+                            onShuffleAll = onShuffleAll,
+                            onToggleFavorite = onToggleFavorite,
+                            onAddToPlaylist = { songForPlaylist = it },
+                        )
 
-                LibraryTab.ARTISTAS -> ArtistsTab(
-                    artists = uiState.artists,
-                    contentPadding = contentPadding,
-                    onArtistClick = onArtistClick,
-                )
+                        LibraryTab.ALBUNS -> AlbumsTab(
+                            albums = uiState.albums,
+                            contentPadding = contentPadding,
+                            onAlbumClick = onAlbumClick,
+                        )
 
-                LibraryTab.PLAYLISTS -> PlaylistsTab(
-                    playlists = uiState.playlists,
-                    favoritesCount = uiState.favoritesCount,
-                    contentPadding = contentPadding,
-                    onPlaylistClick = onPlaylistClick,
-                    onFavoritesClick = onFavoritesClick,
-                    onDeletePlaylist = onDeletePlaylist,
-                    onCreatePlaylistRequest = { newPlaylistVisible = true },
-                )
+                        LibraryTab.ARTISTAS -> ArtistsTab(
+                            artists = uiState.artists,
+                            contentPadding = contentPadding,
+                            onArtistClick = onArtistClick,
+                        )
+
+                        LibraryTab.PLAYLISTS -> PlaylistsTab(
+                            playlists = uiState.playlists,
+                            favoritesCount = uiState.favoritesCount,
+                            contentPadding = contentPadding,
+                            onPlaylistClick = onPlaylistClick,
+                            onFavoritesClick = onFavoritesClick,
+                            onDeletePlaylist = onDeletePlaylist,
+                            onCreatePlaylistRequest = { newPlaylistVisible = true },
+                        )
+                    }
+                }
             }
         }
     }
@@ -218,7 +270,7 @@ fun LibraryView(
 
     songForPlaylist?.let { song ->
         ChoosePlaylistDialog(
-            playlists = uiState.playlists,
+            playlists = content?.playlists.orEmpty(),
             onSelect = { playlist ->
                 onAddToPlaylist(song, playlist)
                 songForPlaylist = null

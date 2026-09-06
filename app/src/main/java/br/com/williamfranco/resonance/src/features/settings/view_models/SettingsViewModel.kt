@@ -80,7 +80,10 @@ class SettingsViewModelImpl(
             } else {
                 0L
             }
-            val count = runCatching { libraryRepository.sync(minDuration) }.getOrDefault(0)
+            val count = libraryRepository.sync(minDuration).fold(
+                onSuccess = { synced -> synced },
+                onError = { _ -> null },
+            )
             _uiState.update { it.copy(isScanning = false, lastScanCount = count) }
         }
     }

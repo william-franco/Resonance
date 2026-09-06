@@ -7,6 +7,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import br.com.williamfranco.resonance.src.common.patterns.StatePattern
 import br.com.williamfranco.resonance.src.features.library.view_models.CollectionViewModel
 import br.com.williamfranco.resonance.src.features.library.view_models.CollectionViewModelImpl
 import br.com.williamfranco.resonance.src.features.library.views.CollectionView
@@ -30,18 +31,20 @@ fun CollectionRoute(
         collectionViewModel.load(type, collectionKey)
     }
 
-    val uiState by collectionViewModel.uiState.collectAsStateWithLifecycle()
+    val collectionState by collectionViewModel.state.collectAsStateWithLifecycle()
     val playbackState by playerViewModel.state.collectAsStateWithLifecycle()
+    val songs = (collectionState as? StatePattern.Success)?.data?.songs.orEmpty()
 
     CollectionView(
-        uiState = uiState,
+        collectionState = collectionState,
         currentSongId = playbackState.currentSong?.id,
         bottomPadding = bottomPadding,
         onBack = onBack,
-        onSongClick = { index -> playerViewModel.play(uiState.songs, index) },
-        onPlayAll = { playerViewModel.play(uiState.songs, 0) },
-        onShuffleAll = { playerViewModel.shuffle(uiState.songs) },
+        onSongClick = { index -> playerViewModel.play(songs, index) },
+        onPlayAll = { playerViewModel.play(songs, 0) },
+        onShuffleAll = { playerViewModel.shuffle(songs) },
         onToggleFavorite = collectionViewModel::toggleFavorite,
         onRemoveFromPlaylist = collectionViewModel::removeFromPlaylist,
+        onRetry = { collectionViewModel.load(type, collectionKey) },
     )
 }

@@ -2,8 +2,10 @@ package br.com.williamfranco.resonance.src.features.library.view_models
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import br.com.williamfranco.resonance.src.common.patterns.StatePattern
 import br.com.williamfranco.resonance.src.data.local.toAlbums
 import br.com.williamfranco.resonance.src.data.local.toArtists
+import br.com.williamfranco.resonance.src.features.library.exceptions.LibraryException
 import br.com.williamfranco.resonance.src.features.library.models.Album
 import br.com.williamfranco.resonance.src.features.library.models.Artist
 import br.com.williamfranco.resonance.src.features.library.models.LibraryTab
@@ -12,6 +14,7 @@ import br.com.williamfranco.resonance.src.features.library.models.Song
 import br.com.williamfranco.resonance.src.features.library.repositories.LibraryRepository
 import br.com.williamfranco.resonance.src.features.settings.repositories.SettingsRepository
 import br.com.williamfranco.resonance.src.services.Constants
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,8 +24,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
-data class LibraryUiState(
-    val isLoading: Boolean = true,
+data class LibraryContent(
     val hasPermission: Boolean = false,
     val isScanning: Boolean = false,
     val tab: LibraryTab = LibraryTab.MUSICAS,
@@ -34,11 +36,13 @@ data class LibraryUiState(
     val favoritesCount: Int = 0,
 ) {
     val isEmptyLibrary: Boolean
-        get() = !isLoading && !isScanning && songs.isEmpty() && query.isBlank()
+        get() = !isScanning && songs.isEmpty() && query.isBlank()
 }
 
+typealias LibraryState = StatePattern<LibraryContent, LibraryException>
+
 interface LibraryViewModel {
-    val uiState: StateFlow<LibraryUiState>
+    val state: StateFlow<LibraryState>
 
     fun onPermissionResult(granted: Boolean)
     fun selectTab(tab: LibraryTab)
@@ -69,15 +73,19 @@ class LibraryViewModelImpl(
     private val permission = MutableStateFlow(libraryRepository.hasPermission())
     private val scanning = MutableStateFlow(false)
 
-    private val _uiState = MutableStateFlow(LibraryUiState(hasPermission = permission.value))
-    override val uiState: StateFlow<LibraryUiState> = _uiState.asStateFlow()
+    private val _state = MutableStateFlow<LibraryState>(
+        if (permission.value) StatePattern.Loading else StatePattern.Initial,
+    )
+    override val state: StateFlow<LibraryState> = _state.asStateFlow()
+
+    private var observeJob: Job? = null
 
     init {
-        observeLibrary()
         if (permission.value) refresh()
     }
 
     private fun observeLibrary() {
+        observeJob?.cancel()
         val data = combine(
             libraryRepository.songs,
             libraryRepository.playlists,
@@ -86,9 +94,8 @@ class LibraryViewModelImpl(
             LibraryData(songs = songs, playlists = playlists, favoritesCount = favorites.size)
         }
 
-        combine(data, query, tab, permission, scanning) { library, search, currentTab, granted, isScanning ->
-            LibraryUiState(
-                isLoading = false,
+        observeJob = combine(data, query, tab, permission, scanning) { library, search, currentTab, granted, isScanning ->
+            LibraryContent(
                 hasPermission = granted,
                 isScanning = isScanning,
                 tab = currentTab,
@@ -100,7 +107,7 @@ class LibraryViewModelImpl(
                 favoritesCount = library.favoritesCount,
             )
         }
-            .onEach { state -> _uiState.value = state }
+            .onEach { content -> _state.value = StatePattern.Success(content) }
             .launchIn(viewModelScope)
     }
 
@@ -139,11 +146,27 @@ class LibraryViewModelImpl(
     override fun refresh() {
         if (scanning.value) return
         viewModelScope.launch {
+            val previousContent = (_state.value as? StatePattern.Success)?.data
             scanning.value = true
+            if (previousContent == null) {
+                _state.value = StatePattern.Loading
+            } else {
+                _state.value = StatePattern.Success(previousContent.copy(isScanning = true))
+            }
+
             val settings = settingsRepository.settings.first()
             val minDuration = if (settings.ignoreShortTracks) Constants.SHORT_TRACK_THRESHOLD_MS else 0L
-            runCatching { libraryRepository.sync(minDuration) }
+            val syncResult = libraryRepository.sync(minDuration)
             scanning.value = false
+
+            syncResult.fold(
+                onSuccess = {
+                    if (observeJob == null) observeLibrary()
+                },
+                onError = { error ->
+                    _state.value = StatePattern.Error(error)
+                },
+            )
         }
     }
 
