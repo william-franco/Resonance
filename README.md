@@ -1,6 +1,26 @@
 # Resonance
 
-Offline local music player for Android built with Kotlin and Jetpack Compose. Focused on low-latency playback, Material You UI with dynamic colors from album art, and full offline operation.
+Offline local music player for Android built with Kotlin and Jetpack Compose. The app indexes audio from **MediaStore**, stores library metadata and playlists in **Room**, and plays files with **Media3/ExoPlayer** behind a foreground **PlaybackService** and MediaSession (notifications, lock screen, Bluetooth). UI uses Material You with optional dynamic colors from album art; home screen **Glance** widgets mirror playback state. The architecture prioritizes low-latency local playback and keeps network out of the critical path.
+
+## Structure
+
+```mermaid
+flowchart TB
+  subgraph ui [features]
+    LibraryRoute --> LibraryViewModel
+    PlayerRoute --> PlayerViewModel
+    SettingsRoute --> SettingsViewModel
+  end
+  LibraryViewModel --> LibraryRepository
+  SettingsViewModel --> SettingsRepository
+  LibraryRepository --> RoomDB[(Room)]
+  LibraryRepository --> MediaStoreScanner
+  SettingsRepository --> DataStore
+  PlayerViewModel --> PlaybackConnection
+  PlaybackConnection --> PlaybackService
+  PlaybackService --> ExoPlayer
+  PlaybackService --> PlayerWidget[Glance widgets]
+```
 
 ## Stack
 
