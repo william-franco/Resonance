@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented in this file.
 
+## 2026-11-01
+
+- Commit: Updated Android Gradle Plugin to 9.5.0 and CI actions.
+  - Refreshed dependency versions and related build configuration to keep the project current.
+  - Updated CI to actions/checkout v7 and actions/setup-java v6.
+
 ## 2026-09-19
 
 - Commit: Updated Android build configuration.
