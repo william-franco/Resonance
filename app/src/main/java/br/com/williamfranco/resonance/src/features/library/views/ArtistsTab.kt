@@ -23,9 +23,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import br.com.williamfranco.resonance.src.design.components.AlbumArt
-import br.com.williamfranco.resonance.src.design.components.Dimens
-import br.com.williamfranco.resonance.src.design.components.EmptyState
+import br.com.williamfranco.resonance.src.common.design.components.AlbumArt
+import br.com.williamfranco.resonance.src.common.design.components.Dimens
+import br.com.williamfranco.resonance.src.common.design.components.EmptyState
 import br.com.williamfranco.resonance.src.features.library.models.Artist
 
 @Composable

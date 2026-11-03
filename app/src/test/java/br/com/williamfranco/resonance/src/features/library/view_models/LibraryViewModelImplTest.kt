@@ -7,7 +7,7 @@ import br.com.williamfranco.resonance.src.fakes.song
 import br.com.williamfranco.resonance.src.features.library.exceptions.LibraryException
 import br.com.williamfranco.resonance.src.features.library.models.LibraryTab
 import br.com.williamfranco.resonance.src.features.settings.models.SettingsModel
-import br.com.williamfranco.resonance.src.services.Constants
+import br.com.williamfranco.resonance.src.common.constants.Constants
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher

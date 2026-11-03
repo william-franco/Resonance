@@ -5,7 +5,7 @@ import br.com.williamfranco.resonance.src.fakes.FakeSettingsRepository
 import br.com.williamfranco.resonance.src.fakes.song
 import br.com.williamfranco.resonance.src.features.settings.models.ColorSource
 import br.com.williamfranco.resonance.src.features.settings.models.ThemeMode
-import br.com.williamfranco.resonance.src.services.Constants
+import br.com.williamfranco.resonance.src.common.constants.Constants
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher

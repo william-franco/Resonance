@@ -53,8 +53,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import br.com.williamfranco.resonance.src.common.patterns.StatePattern
-import br.com.williamfranco.resonance.src.design.components.Dimens
-import br.com.williamfranco.resonance.src.design.components.EmptyState
+import br.com.williamfranco.resonance.src.common.design.components.Dimens
+import br.com.williamfranco.resonance.src.common.design.components.EmptyState
 import br.com.williamfranco.resonance.src.features.library.models.Album
 import br.com.williamfranco.resonance.src.features.library.models.Artist
 import br.com.williamfranco.resonance.src.features.library.models.LibraryTab

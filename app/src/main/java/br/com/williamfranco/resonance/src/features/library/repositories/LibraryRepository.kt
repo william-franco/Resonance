@@ -13,7 +13,7 @@ import br.com.williamfranco.resonance.src.features.library.models.Album
 import br.com.williamfranco.resonance.src.features.library.models.Artist
 import br.com.williamfranco.resonance.src.features.library.models.Playlist
 import br.com.williamfranco.resonance.src.features.library.models.Song
-import br.com.williamfranco.resonance.src.services.library.MediaStoreScanner
+import br.com.williamfranco.resonance.src.common.services.library.MediaStoreScanner
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 

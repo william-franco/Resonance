@@ -13,7 +13,7 @@ import br.com.williamfranco.resonance.src.features.library.models.Playlist
 import br.com.williamfranco.resonance.src.features.library.models.Song
 import br.com.williamfranco.resonance.src.features.library.repositories.LibraryRepository
 import br.com.williamfranco.resonance.src.features.settings.repositories.SettingsRepository
-import br.com.williamfranco.resonance.src.services.Constants
+import br.com.williamfranco.resonance.src.common.constants.Constants
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

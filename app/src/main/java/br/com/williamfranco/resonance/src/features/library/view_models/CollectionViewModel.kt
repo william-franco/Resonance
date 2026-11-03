@@ -6,7 +6,7 @@ import br.com.williamfranco.resonance.src.common.patterns.StatePattern
 import br.com.williamfranco.resonance.src.features.library.exceptions.LibraryException
 import br.com.williamfranco.resonance.src.features.library.models.Song
 import br.com.williamfranco.resonance.src.features.library.repositories.LibraryRepository
-import br.com.williamfranco.resonance.src.routes.CollectionType
+import br.com.williamfranco.resonance.src.common.routes.CollectionType
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow

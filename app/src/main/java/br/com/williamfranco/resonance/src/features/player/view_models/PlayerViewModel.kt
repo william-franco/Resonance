@@ -4,8 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.com.williamfranco.resonance.src.features.library.models.Song
 import br.com.williamfranco.resonance.src.features.library.repositories.LibraryRepository
-import br.com.williamfranco.resonance.src.services.playback.PlaybackConnection
-import br.com.williamfranco.resonance.src.services.playback.PlaybackState
+import br.com.williamfranco.resonance.src.common.services.playback.PlaybackConnection
+import br.com.williamfranco.resonance.src.common.services.playback.PlaybackState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow

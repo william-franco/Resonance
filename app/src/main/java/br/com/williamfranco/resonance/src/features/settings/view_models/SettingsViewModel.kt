@@ -7,7 +7,7 @@ import br.com.williamfranco.resonance.src.features.settings.models.ColorSource
 import br.com.williamfranco.resonance.src.features.settings.models.SettingsModel
 import br.com.williamfranco.resonance.src.features.settings.models.ThemeMode
 import br.com.williamfranco.resonance.src.features.settings.repositories.SettingsRepository
-import br.com.williamfranco.resonance.src.services.Constants
+import br.com.williamfranco.resonance.src.common.constants.Constants
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

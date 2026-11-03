@@ -19,7 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import br.com.williamfranco.resonance.src.services.playback.PlaybackState
+import br.com.williamfranco.resonance.src.common.services.playback.PlaybackState
 
 /**
  * Camada global do player. O mini-player e a tela cheia são dois estados do mesmo

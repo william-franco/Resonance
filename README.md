@@ -19,7 +19,7 @@ flowchart TB
   PlayerViewModel --> PlaybackConnection
   PlaybackConnection --> PlaybackService
   PlaybackService --> ExoPlayer
-  PlaybackService --> PlayerWidget[Glance widgets]
+  PlaybackService --> PlayerWidget[Glance in design/components]
 ```
 
 ## Stack
@@ -43,25 +43,26 @@ flowchart TB
 
 ## Architecture
 
-Feature-based MVVM with Koin for dependency injection.
+Feature-based MVVM with Koin for dependency injection. Shared code lives under `common/` (including reusable Compose and Glance UI in `design/components/`). Local persistence (Room) stays in `data/` outside `common/`.
 
 ```
 src/
-├── common/patterns/
-├── design/
-│   ├── components/
-│   └── theme/
-├── di/
-├── routes/
+├── common/
+│   ├── constants/
+│   ├── dependency_injectors/
+│   ├── design/
+│   │   ├── components/   # Compose + Glance (no feature model imports)
+│   │   └── theme/
+│   ├── patterns/
+│   ├── routes/
+│   └── services/
+│       ├── library/
+│       └── playback/
 ├── data/local/
-├── services/
-│   ├── library/
-│   └── playback/
 ├── features/
 │   ├── library/
 │   ├── player/
 │   └── settings/
-└── widgets/
 ```
 
 ## ScreenShots

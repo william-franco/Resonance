@@ -27,9 +27,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import br.com.williamfranco.resonance.src.design.components.Dimens
-import br.com.williamfranco.resonance.src.design.components.SongRow
+import br.com.williamfranco.resonance.src.common.design.components.Dimens
+import br.com.williamfranco.resonance.src.common.design.components.SongRow
 import br.com.williamfranco.resonance.src.features.library.models.Song
+import br.com.williamfranco.resonance.src.features.library.models.toClock
 
 @Composable
 fun QueueSheet(
@@ -62,7 +63,11 @@ fun QueueSheet(
         ) {
             itemsIndexed(items = queue, key = { _, song -> song.id }) { index, song ->
                 SongRow(
-                    song = song,
+                    title = song.title,
+                    subtitle = song.artist,
+                    durationText = song.durationMs.toClock(),
+                    artworkUri = song.artworkUri,
+                    artworkContentDescription = "Capa de ${song.album}",
                     isCurrent = index == currentIndex,
                     onClick = { onSongClick(index) },
                     modifier = Modifier.padding(horizontal = Dimens.ScreenPadding - 4.dp),

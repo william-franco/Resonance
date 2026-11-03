@@ -13,7 +13,7 @@ import br.com.williamfranco.resonance.src.features.library.view_models.Collectio
 import br.com.williamfranco.resonance.src.features.library.views.CollectionView
 import br.com.williamfranco.resonance.src.features.player.view_models.PlayerViewModel
 import br.com.williamfranco.resonance.src.features.player.view_models.PlayerViewModelImpl
-import br.com.williamfranco.resonance.src.routes.CollectionType
+import br.com.williamfranco.resonance.src.common.routes.CollectionType
 import org.koin.androidx.compose.koinViewModel
 
 @Composable

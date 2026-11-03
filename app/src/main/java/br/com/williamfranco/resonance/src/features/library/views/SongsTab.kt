@@ -18,11 +18,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import br.com.williamfranco.resonance.src.design.components.Dimens
-import br.com.williamfranco.resonance.src.design.components.EmptyState
-import br.com.williamfranco.resonance.src.design.components.PlayShuffleRow
-import br.com.williamfranco.resonance.src.design.components.SongRow
+import br.com.williamfranco.resonance.src.common.design.components.Dimens
+import br.com.williamfranco.resonance.src.common.design.components.EmptyState
+import br.com.williamfranco.resonance.src.common.design.components.PlayShuffleRow
+import br.com.williamfranco.resonance.src.common.design.components.SongRow
 import br.com.williamfranco.resonance.src.features.library.models.Song
+import br.com.williamfranco.resonance.src.features.library.models.toClock
 
 @Composable
 fun SongsTab(
@@ -57,7 +58,11 @@ fun SongsTab(
 
         itemsIndexed(items = songs, key = { _, song -> song.id }) { index, song ->
             SongRow(
-                song = song,
+                title = song.title,
+                subtitle = song.artist,
+                durationText = song.durationMs.toClock(),
+                artworkUri = song.artworkUri,
+                artworkContentDescription = "Capa de ${song.album}",
                 isCurrent = song.id == currentSongId,
                 onClick = { onSongClick(index) },
                 modifier = Modifier.padding(horizontal = Dimens.ScreenPadding - 4.dp),

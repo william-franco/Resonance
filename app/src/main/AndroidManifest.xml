@@ -37,7 +37,7 @@
         </activity>
 
         <service
-            android:name=".src.services.playback.PlaybackService"
+            android:name=".src.common.services.playback.PlaybackService"
             android:exported="true"
             android:foregroundServiceType="mediaPlayback">
             <intent-filter>
@@ -47,7 +47,7 @@
         </service>
 
         <receiver
-            android:name=".src.widgets.PlayerWidgetReceiver"
+            android:name=".src.common.design.components.PlayerWidgetReceiver"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -59,7 +59,7 @@
         </receiver>
 
         <receiver
-            android:name=".src.widgets.PlayerWidgetActionReceiver"
+            android:name=".src.common.design.components.PlayerWidgetActionReceiver"
             android:exported="false" />
     </application>
 

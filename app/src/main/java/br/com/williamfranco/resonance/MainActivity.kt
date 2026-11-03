@@ -6,14 +6,14 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import br.com.williamfranco.resonance.src.design.theme.ResonanceTheme
-import br.com.williamfranco.resonance.src.design.theme.rememberSeedColor
+import br.com.williamfranco.resonance.src.common.design.theme.ResonanceTheme
+import br.com.williamfranco.resonance.src.common.design.theme.rememberSeedColor
 import br.com.williamfranco.resonance.src.features.player.view_models.PlayerViewModel
 import br.com.williamfranco.resonance.src.features.player.view_models.PlayerViewModelImpl
 import br.com.williamfranco.resonance.src.features.settings.models.ColorSource
 import br.com.williamfranco.resonance.src.features.settings.view_models.SettingsViewModel
 import br.com.williamfranco.resonance.src.features.settings.view_models.SettingsViewModelImpl
-import br.com.williamfranco.resonance.src.routes.RoutesApp
+import br.com.williamfranco.resonance.src.common.routes.RoutesApp
 import org.koin.androidx.compose.koinViewModel
 
 class MainActivity : ComponentActivity() {

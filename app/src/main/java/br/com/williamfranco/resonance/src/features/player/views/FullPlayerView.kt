@@ -46,12 +46,12 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import br.com.williamfranco.resonance.src.design.components.AlbumArt
-import br.com.williamfranco.resonance.src.design.components.Dimens
-import br.com.williamfranco.resonance.src.design.components.verticalSwipe
+import br.com.williamfranco.resonance.src.common.design.components.AlbumArt
+import br.com.williamfranco.resonance.src.common.design.components.Dimens
+import br.com.williamfranco.resonance.src.common.design.components.verticalSwipe
 import br.com.williamfranco.resonance.src.features.library.models.Song
 import br.com.williamfranco.resonance.src.features.library.models.toClock
-import br.com.williamfranco.resonance.src.services.playback.RepeatMode
+import br.com.williamfranco.resonance.src.common.services.playback.RepeatMode
 
 @Composable
 fun FullPlayerView(

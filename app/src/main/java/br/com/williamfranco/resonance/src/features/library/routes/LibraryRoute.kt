@@ -14,8 +14,8 @@ import br.com.williamfranco.resonance.src.features.library.view_models.LibraryVi
 import br.com.williamfranco.resonance.src.features.library.views.LibraryView
 import br.com.williamfranco.resonance.src.features.player.view_models.PlayerViewModel
 import br.com.williamfranco.resonance.src.features.player.view_models.PlayerViewModelImpl
-import br.com.williamfranco.resonance.src.routes.CollectionType
-import br.com.williamfranco.resonance.src.services.library.audioPermission
+import br.com.williamfranco.resonance.src.common.routes.CollectionType
+import br.com.williamfranco.resonance.src.common.services.library.audioPermission
 import org.koin.androidx.compose.koinViewModel
 
 @Composable

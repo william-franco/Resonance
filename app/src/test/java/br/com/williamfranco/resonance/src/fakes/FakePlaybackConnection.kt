@@ -1,9 +1,9 @@
 package br.com.williamfranco.resonance.src.fakes
 
 import br.com.williamfranco.resonance.src.features.library.models.Song
-import br.com.williamfranco.resonance.src.services.playback.PlaybackConnection
-import br.com.williamfranco.resonance.src.services.playback.PlaybackState
-import br.com.williamfranco.resonance.src.services.playback.RepeatMode
+import br.com.williamfranco.resonance.src.common.services.playback.PlaybackConnection
+import br.com.williamfranco.resonance.src.common.services.playback.PlaybackState
+import br.com.williamfranco.resonance.src.common.services.playback.RepeatMode
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

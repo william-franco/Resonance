@@ -3,7 +3,7 @@ package br.com.williamfranco.resonance.src.features.player.view_models
 import br.com.williamfranco.resonance.src.fakes.FakeLibraryRepository
 import br.com.williamfranco.resonance.src.fakes.FakePlaybackConnection
 import br.com.williamfranco.resonance.src.fakes.song
-import br.com.williamfranco.resonance.src.services.playback.RepeatMode
+import br.com.williamfranco.resonance.src.common.services.playback.RepeatMode
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job

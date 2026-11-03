@@ -6,7 +6,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import br.com.williamfranco.resonance.src.design.components.EmptyState
+import br.com.williamfranco.resonance.src.common.design.components.EmptyState
 
 @Composable
 fun PermissionView(onRequestPermission: () -> Unit, modifier: Modifier = Modifier) {

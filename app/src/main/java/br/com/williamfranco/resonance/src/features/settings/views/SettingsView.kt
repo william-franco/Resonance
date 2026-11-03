@@ -47,7 +47,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import br.com.williamfranco.resonance.BuildConfig
-import br.com.williamfranco.resonance.src.design.components.Dimens
+import br.com.williamfranco.resonance.src.common.design.components.Dimens
 import br.com.williamfranco.resonance.src.features.settings.models.ColorSource
 import br.com.williamfranco.resonance.src.features.settings.models.ThemeMode
 import br.com.williamfranco.resonance.src.features.settings.view_models.SettingsUiState
